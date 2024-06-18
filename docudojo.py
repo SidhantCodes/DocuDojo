@@ -31,9 +31,10 @@ def get_vec_store(chunks):
     vec_store=FAISS.from_texts(chunks, embedding=embeddings)
     vec_store.save_local("index")
 
+
 def get_conv_chain():
     prompt_temp="""
-        Answer the question as detailed as possible from the provided context, make sure to provide all the details, if the answer is not in
+        Give me a very detailed answer as possible, from the provided context, make sure to provide all the details, if the answer is not in
         provided context just say, "Answer is not available in the provided context", don't provide the wrong answers\n\n
         Context:\n {context}?\n
         Question: \n{question}\n
@@ -48,12 +49,12 @@ def get_conv_chain():
 
 def user_input(query):
     embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
-    db=FAISS.load_local("index", embeddings)
+    db=FAISS.load_local("index", embeddings, allow_dangerous_deserialization=True)
     docs=db.similarity_search(query)
     chain=get_conv_chain()
     res=chain(
         {"input_documents":docs, "question": query}
         , return_only_outputs=True
     )
-    print(res)
+    return res
 
